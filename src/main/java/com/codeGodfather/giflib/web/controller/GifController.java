@@ -1,6 +1,6 @@
-package com.teamtreehouse.giflib.web.controller;
+package com.codeGodfather.giflib.web.controller;
 
-import com.teamtreehouse.giflib.model.Gif;
+import com.codeGodfather.giflib.model.Gif;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;

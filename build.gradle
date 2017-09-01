@@ -1,4 +1,4 @@
-group 'com.teamtreehouse'
+group 'com.codeGodfather'
 version '1.0-SNAPSHOT'
 
 // Include the Spring Boot plugin
@@ -26,4 +26,12 @@ repositories {
 dependencies {
     compile 'org.springframework.boot:spring-boot-starter-thymeleaf'
     compile 'org.hashids:hashids:1.0.1'
+    //spring-orm for seamless integeration for an ORM
+    compile 'org.springframework:spring-orm:4.2.5.RELEASE'
+    //hibernate-the ORM to be used
+    compile 'org.hibernate:hibernate-core:5.1.0.Final'
+    //database connection pooling helps in reusing database components as they take some time to construct
+    compile 'org.apache.tomcat:tomcat-dbcp:8.0.32'
+    //h2 is the database
+    compile 'com.h2database:h2:1.4.191'
 }

@@ -1,4 +1,4 @@
-package com.teamtreehouse.giflib;
+package com.codeGodfather.giflib;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
