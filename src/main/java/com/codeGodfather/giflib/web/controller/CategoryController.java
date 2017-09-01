@@ -1,6 +1,7 @@
 package com.codeGodfather.giflib.web.controller;
 
 import com.codeGodfather.giflib.model.Category;
+import com.codeGodfather.giflib.service.CategoryService;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import java.util.List;
 public class CategoryController {
     //  SessionFactory has a bean annotation and hence can be autowired
     @Autowired
-    private SessionFactory sessionFactory;
+    private CategoryService categoryService;
 
 
     // Index of all categories
@@ -25,9 +26,9 @@ public class CategoryController {
     @SuppressWarnings("unchecked")
     public String listCategories(Model model) {
         // TODO: Get all categories
-        Session session = sessionFactory.openSession();
 
-        List<Category> categories = session.createCriteria(Category.class).list();
+
+        List<Category> categories = categoryService.findAll();
 
         model.addAttribute("categories",categories);
         return "category/index";
