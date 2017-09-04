@@ -3,15 +3,19 @@ package com.codeGodfather.giflib.web.controller;
 import com.codeGodfather.giflib.model.Category;
 import com.codeGodfather.giflib.service.CategoryService;
 import com.codeGodfather.giflib.web.Color;
+import com.codeGodfather.giflib.web.FlashMessage;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +53,9 @@ public class CategoryController {
     @RequestMapping("categories/add")
     public String formNewCategory(Model model) {
         // TODO: Add model attributes needed for new form
-        model.addAttribute("category",new Category());
+        if ( !model.containsAttribute("category")){
+             model.addAttribute("category",new Category());
+        }
         model.addAttribute("colors", Color.values());
         return "category/form";
     }
@@ -72,10 +78,23 @@ public class CategoryController {
     }
 
     // Add a category
+    //@Valid will make the validation check that we added in Model Classes
+    //Binding result will catch the result of @Valid annotation
     @RequestMapping(value = "/categories", method = RequestMethod.POST)
-    public String addCategory(Category category) {
+    public String addCategory(@Valid Category category, BindingResult result, RedirectAttributes redirectAttributes) {
         // TODO: Add category if valid data was received
+        if(result.hasErrors())
+        {
+            //including validation errors in the redirect page
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.category",result);
+            // adding the invalid category data into the redirect request
+            //re populating the entered data
+            redirectAttributes.addFlashAttribute("category",category);
+            //will redirect back to form
+            return "redirect:/categories/add";
+        }
         categoryService.save(category);
+        redirectAttributes.addFlashAttribute("flash",new FlashMessage("Category successfully added",FlashMessage.Status.SUCCESS));
         // TODO: Redirect browser to /categories
         return "redirect: /categories";
     }
