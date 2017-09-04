@@ -36,6 +36,16 @@ public class CategoryDaoImpl implements CategoryDao {
 
     @Override
     public void save(Category category) {
+        //open a session
+        Session session = sessionFactory.openSession();
+        //begin transaction
+        session.beginTransaction();
+        //save the category
+        session.save(category);
+        //commit the transaction
+        session.getTransaction().commit();
+        //close the session
+        session.close();
 
     }
 

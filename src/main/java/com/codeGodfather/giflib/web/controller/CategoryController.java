@@ -2,6 +2,7 @@ package com.codeGodfather.giflib.web.controller;
 
 import com.codeGodfather.giflib.model.Category;
 import com.codeGodfather.giflib.service.CategoryService;
+import com.codeGodfather.giflib.web.Color;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,8 @@ public class CategoryController {
     @RequestMapping("categories/add")
     public String formNewCategory(Model model) {
         // TODO: Add model attributes needed for new form
-
+        model.addAttribute("category",new Category());
+        model.addAttribute("colors", Color.values());
         return "category/form";
     }
 
@@ -71,11 +73,11 @@ public class CategoryController {
 
     // Add a category
     @RequestMapping(value = "/categories", method = RequestMethod.POST)
-    public String addCategory() {
+    public String addCategory(Category category) {
         // TODO: Add category if valid data was received
-
+        categoryService.save(category);
         // TODO: Redirect browser to /categories
-        return null;
+        return "redirect: /categories";
     }
 
     // Delete an existing category
