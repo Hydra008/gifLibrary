@@ -1,6 +1,7 @@
 package com.codeGodfather.giflib.service;
 
 import com.codeGodfather.giflib.model.Category;
+import com.codeGodfather.giflib.model.Gif;
 
 import java.util.List;
 
@@ -12,4 +13,5 @@ public interface CategoryService {
     Category findById(Long id);
     void save(Category category);
     void delete(Category category);
+
 }

@@ -43,7 +43,7 @@ public class CategoryController {
     @RequestMapping("/categories/{categoryId}")
     public String category(@PathVariable Long categoryId, Model model) {
         // TODO: Get the category given by categoryId
-        Category category = null;
+        Category category=categoryService.findById(categoryId);
 
         model.addAttribute("category", category);
         return "category/details";
@@ -56,7 +56,12 @@ public class CategoryController {
         if ( !model.containsAttribute("category")){
              model.addAttribute("category",new Category());
         }
+        //these below added attributes are used in forms to make them reusable for add and update.
+        //these attributes will be rendered by thymeleaf engine.
         model.addAttribute("colors", Color.values());
+        model.addAttribute("action","/categories");
+        model.addAttribute("heading","New Category");
+        model.addAttribute("submit","Add");
         return "category/form";
     }
 
@@ -64,17 +69,35 @@ public class CategoryController {
     @RequestMapping("categories/{categoryId}/edit")
     public String formEditCategory(@PathVariable Long categoryId, Model model) {
         // TODO: Add model attributes needed for edit form
+        if ( !model.containsAttribute("category")){
+            model.addAttribute("category",categoryService.findById(categoryId));
+        }
+        model.addAttribute("colors", Color.values());
+        model.addAttribute("action",String.format("/categories/%s",categoryId));
+        model.addAttribute("heading","Edit Category");
+        model.addAttribute("submit","Update");
 
         return "category/form";
     }
 
     // Update an existing category
     @RequestMapping(value = "/categories/{categoryId}", method = RequestMethod.POST)
-    public String updateCategory() {
+    public String updateCategory(@Valid Category category, BindingResult result,RedirectAttributes redirectAttributes) {
         // TODO: Update category if valid data was received
-
+        if(result.hasErrors())
+        {
+            //including validation errors in the redirect page
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.category",result);
+            // adding the invalid category data into the redirect request
+            //re populating the entered data
+            redirectAttributes.addFlashAttribute("category",category);
+            //will redirect back to form
+            return String.format("redirect:/categories/%s/edit",category.getId());
+        }
+        categoryService.save(category);
+        redirectAttributes.addFlashAttribute("flash",new FlashMessage("Category successfully Updated",FlashMessage.Status.SUCCESS));
         // TODO: Redirect browser to /categories
-        return null;
+        return "redirect:/categories";
     }
 
     // Add a category
@@ -101,10 +124,19 @@ public class CategoryController {
 
     // Delete an existing category
     @RequestMapping(value = "/categories/{categoryId}/delete", method = RequestMethod.POST)
-    public String deleteCategory(@PathVariable Long categoryId) {
+    public String deleteCategory(@PathVariable Long categoryId ,RedirectAttributes redirectAttributes ) {
+        Category category = categoryService.findById(categoryId);
         // TODO: Delete category if it contains no GIFs
-
+        //getGifs function will throw a lazy loading error while deleting
+        //getGifs need to fetched before the session is closed
+            if(category.getGifs().size() > 0)
+            {
+                redirectAttributes.addFlashAttribute("flash",new FlashMessage("Only Empty Categories can be deleted", FlashMessage.Status.FAILURE));
+                return String.format("redirect:/categories/%s/edit",categoryId);
+            }
+            categoryService.delete(category);
+            redirectAttributes.addFlashAttribute("flash",new FlashMessage("Category deleted successfuly", FlashMessage.Status.SUCCESS));
         // TODO: Redirect browser to /categories
-        return null;
+        return "redirect:/categories";
     }
 }

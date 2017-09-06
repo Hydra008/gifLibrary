@@ -1,21 +1,33 @@
 package com.codeGodfather.giflib.web.controller;
 
 import com.codeGodfather.giflib.model.Gif;
+import com.codeGodfather.giflib.service.CategoryService;
+import com.codeGodfather.giflib.service.GifService;
+import com.codeGodfather.giflib.web.FlashMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 public class GifController {
+    @Autowired
+    private GifService gifService;
+
+    @Autowired
+     private CategoryService categoryService;
 
     // Home page - index of all GIFs
     @RequestMapping("/")
     public String listGifs(Model model) {
         // TODO: Get all gifs
-        List<Gif> gifs = new ArrayList<>();
+        List<Gif> gifs = gifService.findAll();
 
         model.addAttribute("gifs", gifs);
         return "gif/index";
@@ -25,8 +37,7 @@ public class GifController {
     @RequestMapping("/gifs/{gifId}")
     public String gifDetails(@PathVariable Long gifId, Model model) {
         // TODO: Get gif whose id is gifId
-        Gif gif = null;
-
+        Gif gif = gifService.findById(gifId);
         model.addAttribute("gif", gif);
         return "gif/details";
     }
@@ -36,41 +47,62 @@ public class GifController {
     @ResponseBody
     public byte[] gifImage(@PathVariable Long gifId) {
         // TODO: Return image data as byte array of the GIF whose id is gifId
-        return null;
+        return gifService.findById(gifId).getBytes();
     }
 
     // Favorites - index of all GIFs marked favorite
     @RequestMapping("/favorites")
     public String favorites(Model model) {
         // TODO: Get list of all GIFs marked as favorite
-        List<Gif> faves = new ArrayList<>();
+        List<Gif> faves = gifService.faves();
 
         model.addAttribute("gifs",faves);
-        model.addAttribute("username","Chris Ramacciotti"); // Static username
+        model.addAttribute("username","Godfather"); // Static username
         return "gif/favorites";
     }
 
     // Upload a new GIF
     @RequestMapping(value = "/gifs", method = RequestMethod.POST)
-    public String addGif() {
+    //@Request param will notfy spring that the file is going to be payload from the client.
+    public String addGif(Gif gif, @RequestParam MultipartFile file, RedirectAttributes redirectAttributes)  {
         // TODO: Upload new GIF if data is valid
+        gifService.save(gif,file);
+
+        //adding flash message for success
+        redirectAttributes.addFlashAttribute("flash",new FlashMessage("Gif Sucessfully uploaded", FlashMessage.Status.SUCCESS));
 
         // TODO: Redirect browser to new GIF's detail view
-        return null;
+        return String.format("redirect:/gifs/%s",gif.getId());
     }
 
     // Form for uploading a new GIF
     @RequestMapping("/upload")
     public String formNewGif(Model model) {
         // TODO: Add model attributes needed for new GIF upload form
+        if (!model.containsAttribute("gif"))
+        {
+            model.addAttribute("gif",new Gif());
+        }
+        model.addAttribute("categories",categoryService.findAll());
+        model.addAttribute("action","/gifs");
+        model.addAttribute("heading","Upload");
+        model.addAttribute("submit","Add");
 
         return "gif/form";
     }
 
     // Form for editing an existing GIF
-    @RequestMapping(value = "/gifs/{dgifI}/edit")
+    @RequestMapping(value = "/gifs/{gifId}/edit")
     public String formEditGif(@PathVariable Long gifId, Model model) {
         // TODO: Add model attributes needed for edit form
+        if (!model.containsAttribute("gif"))
+        {
+            model.addAttribute("gif",gifService.findById(gifId));
+        }
+        model.addAttribute("categories",categoryService.findAll());
+        model.addAttribute("action",String.format("/gifs/%s",gifId));
+        model.addAttribute("heading","Edit GIF");
+        model.addAttribute("submit","Update");
 
         return "gif/form";
     }
@@ -86,20 +118,24 @@ public class GifController {
 
     // Delete an existing GIF
     @RequestMapping(value = "/gifs/{gifId}/delete", method = RequestMethod.POST)
-    public String deleteGif(@PathVariable Long gifId) {
+    public String deleteGif(@PathVariable Long gifId , RedirectAttributes redirectAttributes) {
+        Gif gif = gifService.findById(gifId);
         // TODO: Delete the GIF whose id is gifId
-
+        gifService.delete(gif);
+        redirectAttributes.addFlashAttribute("flash",new FlashMessage("Gif deleted", FlashMessage.Status.SUCCESS));
         // TODO: Redirect to app root
-        return null;
+        return "redirect:/";
     }
 
     // Mark/unmark an existing GIF as a favorite
     @RequestMapping(value = "/gifs/{gifId}/favorite", method = RequestMethod.POST)
-    public String toggleFavorite(@PathVariable Long gifId) {
+    //Http request allows us to redirect to the page from where favourite is made
+    public String toggleFavorite(@PathVariable Long gifId ,HttpServletRequest request) {
         // TODO: With GIF whose id is gifId, toggle the favorite field
-
+        Gif gif = gifService.findById(gifId);
+        gifService.toggleFavourite(gif);
         // TODO: Redirect to GIF's detail view
-        return null;
+        return String.format("redirect:%s",request.getHeader("referer"));
     }
 
     // Search results

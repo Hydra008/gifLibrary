@@ -1,6 +1,7 @@
 package com.codeGodfather.giflib.dao;
 
 import com.codeGodfather.giflib.model.Category;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,12 @@ public class CategoryDaoImpl implements CategoryDao {
 
     @Override
     public Category findById(Long id) {
-        return null;
+        Session session = sessionFactory.openSession();
+        Category category =session.get(Category.class,id);
+        //this wi;; fetch the list of gifs which is required by delete function after the session is closed
+        Hibernate.initialize(category.getGifs());
+        session.close();
+        return category;
     }
 
     @Override
@@ -41,7 +47,7 @@ public class CategoryDaoImpl implements CategoryDao {
         //begin transaction
         session.beginTransaction();
         //save the category
-        session.save(category);
+        session.saveOrUpdate(category);
         //commit the transaction
         session.getTransaction().commit();
         //close the session
@@ -51,6 +57,10 @@ public class CategoryDaoImpl implements CategoryDao {
 
     @Override
     public void delete(Category category) {
-
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.delete(category);
+        session.getTransaction().commit();
+        session.close();
     }
 }
