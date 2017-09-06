@@ -51,5 +51,10 @@ public class GifServiceImpl implements GifService {
     {
         return gifDao.findFaves();
     }
+    @Override
+    public List<Gif> search(String q)
+    {
+        return gifDao.search(q);
+    }
 }
 

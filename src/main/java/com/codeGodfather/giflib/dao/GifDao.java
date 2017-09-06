@@ -14,4 +14,5 @@ public interface GifDao {
     void save(Gif gif);
     void delete(Gif gif);
     List<Gif> findFaves();
+    List<Gif> search(String q);
 }

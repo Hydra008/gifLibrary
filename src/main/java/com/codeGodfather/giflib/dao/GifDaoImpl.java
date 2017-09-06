@@ -67,4 +67,20 @@ public class GifDaoImpl implements GifDao {
         session.close();
         return faveGifs;
     }
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Gif> search(String q)
+    {
+        Session session =sessionFactory.openSession();
+        List<Gif> gifs = session.createCriteria(Gif.class).list();
+        List<Gif> search=new ArrayList<Gif>();
+        for(Gif gif :gifs)
+            if(gif.getDescription().contains(q))
+            {
+                search.add(gif);
+            }
+        session.close();
+        return search;
+
+    }
 }

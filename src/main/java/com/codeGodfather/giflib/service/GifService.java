@@ -15,5 +15,6 @@ public interface GifService {
     void delete(Gif gif);
     void toggleFavourite(Gif gif);
     List<Gif> faves();
+    List<Gif> search(String q);
 
 }
